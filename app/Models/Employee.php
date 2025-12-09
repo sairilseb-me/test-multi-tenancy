@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Scopes\TenantScope;
 
 class Employee extends Model
 {
@@ -19,6 +20,11 @@ class Employee extends Model
     protected $casts = [
         'birthdate' => 'date',
     ];
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new Scopes\TenantScope);
+    }
 
 
     public function tenant()
