@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     nodejs \
     npm \
+    sqlite3 \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -23,11 +24,20 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copy existing application directory contents
 COPY . /var/www/html
 
+# Install PHP dependencies
+RUN composer install --no-dev --optimize-autoloader
+
 # Copy existing application directory permissions
 RUN chown -R www-data:www-data /var/www/html
 
 # Change current user to www-data
 USER www-data
+
+# Create database file if it doesn't exist
+RUN touch database/database.sqlite
+
+# Run migrations
+RUN php artisan migrate:fresh
 
 # Expose port 9000 and start php-fpm server
 EXPOSE 9000
